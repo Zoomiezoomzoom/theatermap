@@ -1,0 +1,94 @@
+{
+  "grants": [
+    {
+      "id": 1,
+      "name": "NEA Our Town Grant",
+      "deadline": "2025-06-15",
+      "amount": "$25,000 - $150,000",
+      "description": "Supporting creative placemaking projects that integrate arts, culture, and design activities into efforts that strengthen communities.",
+      "url": "https://www.arts.gov/grants/our-town",
+      "category": "federal"
+    },
+    {
+      "id": 2,
+      "name": "NEA Art Works Grant",
+      "deadline": "2025-02-15",
+      "amount": "$10,000 - $100,000",
+      "description": "Supports public engagement with, and access to, various forms of art across the nation.",
+      "url": "https://www.arts.gov/grants/grants-for-arts-projects",
+      "category": "federal"
+    },
+    {
+      "id": 3,
+      "name": "California Arts Council State-Local Partnership",
+      "deadline": "2025-03-30",
+      "amount": "$30,000 - $60,000",
+      "description": "Supporting local arts agencies in addressing community needs through the arts.",
+      "url": "https://arts.ca.gov/grants/state-local-partnership/",
+      "category": "state"
+    },
+    {
+      "id": 4,
+      "name": "California Arts Council Artists in Communities",
+      "deadline": "2025-04-20",
+      "amount": "$5,000 - $20,000",
+      "description": "Supporting artist residencies in community settings.",
+      "url": "https://arts.ca.gov/grants/artists-in-communities/",
+      "category": "state"
+    },
+    {
+      "id": 5,
+      "name": "San Francisco Arts Commission Individual Artist Grant",
+      "deadline": "2025-01-15",
+      "amount": "$15,000",
+      "description": "Supporting individual artists in creating and presenting new works in San Francisco.",
+      "url": "https://www.sfartscommission.org/grants",
+      "category": "local"
+    },
+    {
+      "id": 6,
+      "name": "San Francisco Arts Commission Cultural Equity Grant",
+      "deadline": "2025-05-01",
+      "amount": "$25,000 - $50,000",
+      "description": "Supporting arts organizations that serve historically marginalized communities.",
+      "url": "https://www.sfartscommission.org/grants",
+      "category": "local"
+    },
+    {
+      "id": 7,
+      "name": "Hewlett Foundation Performing Arts Program",
+      "deadline": "2025-03-01",
+      "amount": "$50,000 - $200,000",
+      "description": "Supporting performing arts organizations in the Bay Area.",
+      "url": "https://hewlett.org/programs/performing-arts/",
+      "category": "foundation"
+    },
+    {
+      "id": 8,
+      "name": "Kenneth Rainin Foundation Arts Grant",
+      "deadline": "2025-02-01",
+      "amount": "$25,000 - $100,000",
+      "description": "Supporting experimental and innovative projects in the performing arts.",
+      "url": "https://krfoundation.org/arts/grants/",
+      "category": "foundation"
+    },
+    {
+      "id": 9,
+      "name": "Zellerbach Family Foundation",
+      "deadline": "2025-04-01",
+      "amount": "$5,000 - $15,000",
+      "description": "Supporting performing arts projects and organizations in the Bay Area.",
+      "url": "https://zff.org/applying-for-a-grant/",
+      "category": "foundation"
+    },
+    {
+      "id": 10,
+      "name": "Silicon Valley Community Foundation Arts Grant",
+      "deadline": "2025-05-15",
+      "amount": "$10,000 - $40,000",
+      "description": "Supporting arts and cultural organizations in Silicon Valley and the Bay Area.",
+      "url": "https://www.siliconvalleycf.org/grants",
+      "category": "foundation"
+    }
+  ]
+} 

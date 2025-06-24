@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Theater {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  address     String
+  latitude    Float
+  longitude   Float
+  email       String?
+  phone       String?
+  website     String?
+  image_url   String?
+  capacity    Int?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+  shows       Show[]
+
+  // Supabase specific
+  created_by  String?  @db.Uuid
+  updated_by  String?  @db.Uuid
+
+  @@map("theaters")
+}
+
+model Show {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?   @db.Text
+  start_date  DateTime  @db.Timestamptz(6)
+  end_date    DateTime  @db.Timestamptz(6)
+  price_range String?
+  ticket_url  String?
+  image_url   String?
+  theater     Theater   @relation(fields: [theater_id], references: [id], onDelete: Cascade)
+  theater_id  Int
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @updatedAt @db.Timestamptz(6)
+
+  // Supabase specific
+  created_by  String?   @db.Uuid
+  updated_by  String?   @db.Uuid
+
+  @@index([theater_id])
+  @@index([start_date, end_date])
+  @@map("shows")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
+  email         String    @unique
+  firstName     String?
+  lastName      String?
+  nylasGrantId  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  submissions   Submission[]
+  notificationPreferences NotificationPreferences?
+  notifications Notification[]
+}
+
+model Submission {
+  id              String    @id @default(cuid())
+  theaterName     String
+  scriptTitle     String
+  submissionDate  DateTime
+  deadline        DateTime?
+  status          String    // "Submitted", "Under Review", "Accepted", "Rejected", "No Response"
+  fee             Float?
+  contactPerson   String?
+  contactEmail    String?
+  notes           String?   @db.Text
+  responseDate    DateTime?
+  calendarEventId String?   // For linking to calendar events
+  followUpEventId String?   // For follow-up calendar events
+  
+  // User relationship
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  
+  // Notification relationship
+  notifications   Notification[]
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([submissionDate])
+  @@index([deadline])
+  @@map("submissions")
+}
+
+model NotificationPreferences {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  deadlineReminders     Boolean  @default(true)
+  deadlineReminderDays  Int[]    @default([7, 3, 1])
+  overdueNotifications  Boolean  @default(true)
+  statusUpdates         Boolean  @default(true)
+  weeklyDigest          Boolean  @default(true)
+  emailEnabled          Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // User relationship
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+  userId        String
+  submissionId  String?
+  type          String    // deadline_7_days, deadline_3_days, deadline_1_day, status_changed, weekly_digest, etc.
+  sentAt        DateTime  @default(now())
+  emailId       String?   // External service email ID
+  status        String    @default("sent") // sent, delivered, bounced, failed
+  
+  // User relationship
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Submission relationship (optional)
+  submission    Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([submissionId])
+  @@index([type])
+  @@index([sentAt])
+  @@map("notifications")
+}
+
+// Add RLS Policies in migration
+// Example policy:
+// create policy "Public theaters are viewable by everyone."
+//   on theaters for select
+//   using ( true );
+
+// create policy "Users can insert their own theaters."
+//   on theaters for insert
+//   with check ( auth.uid() = created_by ); 
+ 

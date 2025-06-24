@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrantSpotter - Theater Grant Deadlines</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <h1>GrantSpotter</h1>
+            <p class="subtitle">Never Miss a Theater Grant Deadline</p>
+            <p class="description">Helping Bay Area theater makers track and manage grant opportunities</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="intro">
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-grants">0</span>
+                    <span class="stat-label">Active Grants</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="upcoming-deadlines">0</span>
+                    <span class="stat-label">Upcoming Deadlines</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="total-funding">$0</span>
+                    <span class="stat-label">Total Available</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="filters">
+            <h2>Find Your Next Grant</h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label for="deadline-filter">Deadline:</label>
+                    <select id="deadline-filter">
+                        <option value="all">All Deadlines</option>
+                        <option value="30">Next 30 Days</option>
+                        <option value="60">Next 60 Days</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="amount-filter">Amount:</label>
+                    <select id="amount-filter">
+                        <option value="all">All Amounts</option>
+                        <option value="under10k">Under $10K</option>
+                        <option value="10k-50k">$10K - $50K</option>
+                        <option value="over50k">Over $50K</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section id="grants-list" class="grants-container">
+            <!-- Grants will be dynamically inserted here -->
+        </section>
+
+        <!-- Email Reminder Modal -->
+        <div id="reminder-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Set Email Reminder</h2>
+                <p>Get notified 7 days before the deadline.</p>
+                <form id="reminder-form">
+                    <input type="email" id="email-input" placeholder="Enter your email" required>
+                    <input type="hidden" id="grant-id-input">
+                    <button type="submit" class="button">Set Reminder</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About GrantSpotter</h3>
+                <p>A simple tool to help theater makers in the San Francisco Bay Area track grant deadlines and secure funding for their work.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#" class="footer-link">How It Works</a></li>
+                    <li><a href="#" class="footer-link">Grant Categories</a></li>
+                    <li><a href="#" class="footer-link">Success Stories</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Stay Updated</h3>
+                <p>Join our mailing list for updates on new grant opportunities.</p>
+                <form id="newsletter-form" class="newsletter-form">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit" class="button">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 GrantSpotter. Made with ❤️ for the theater community.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

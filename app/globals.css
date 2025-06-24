@@ -3,19 +3,225 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* New sophisticated theater color palette with warmer gold */
+  --notion-bg: #ffffff;
+  --notion-text: #1a1a2e;
+  --notion-text-light: #4a5568;
+  --notion-border: #e2e8f0;
+  --notion-hover-bg: #f7fafc;
+  --notion-accent: #f7b801;
+  --notion-accent-hover: #e6a800;
+  --notion-primary: #1a1a2e;
+  --notion-secondary: #16213e;
+  --notion-gold: #f7b801;
+  --notion-gold-light: #ffd700;
+
+  /* Existing CSS variables */
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --notion-bg: #0a0d14;
+  --notion-text: #f8fafc;
+  --notion-text-light: #94a3b8;
+  --notion-border: #1e293b;
+  --notion-hover-bg: #1e293b;
+  --notion-accent: #fbbf24;
+  --notion-accent-hover: #f59e0b;
+  --notion-primary: #f8fafc;
+  --notion-secondary: #e2e8f0;
+  --notion-gold: #fbbf24;
+  --notion-gold-light: #fde047;
+
+  /* Existing CSS variables */
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--notion-text);
+  background: var(--notion-bg);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--notion-hover-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--notion-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--notion-text-light);
+}
+
+/* Toast notification styles */
+.notion-toast {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Add a subtle hint about Esc key functionality */
+[data-sonner-toaster]::before {
+  content: '💡 Press Esc to dismiss all';
+  position: absolute;
+  top: -25px;
+  right: 10px;
+  font-size: 11px;
+  color: var(--notion-text-light);
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+[data-sonner-toaster]:hover::before {
+  opacity: 1;
+}
+
+.notion-toast [data-sonner-toast-close] {
+  background: var(--notion-hover-bg) !important;
+  border: 1px solid var(--notion-border) !important;
+  color: var(--notion-text-light) !important;
+  border-radius: 6px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.notion-toast [data-sonner-toast-close]:hover {
+  background: var(--notion-border) !important;
+  color: var(--notion-text) !important;
+  transform: scale(1.05) !important;
+}
+
+.notion-toast [data-sonner-toast-close]:active {
+  transform: scale(0.95) !important;
+}
+
+.notion-toast [data-sonner-toast-close] svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Toast success styling */
+.notion-toast[data-type="success"] {
+  border-left: 4px solid #10b981 !important;
+}
+
+/* Toast error styling */
+.notion-toast[data-type="error"] {
+  border-left: 4px solid #ef4444 !important;
+}
+
+/* Toast warning styling */
+.notion-toast[data-type="warning"] {
+  border-left: 4px solid #f59e0b !important;
+}
+
+/* Dismiss all button styling */
+.dismiss-all-toasts {
+  background: var(--notion-accent) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(247, 184, 1, 0.3) !important;
+  z-index: 9999 !important;
+}
+
+.dismiss-all-toasts:hover {
+  background: var(--notion-accent-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(247, 184, 1, 0.4) !important;
+}
+
+.dismiss-all-toasts:active {
+  transform: translateY(0) !important;
+}
+
+.dark .dismiss-all-toasts {
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4) !important;
+}
+
+.dark .dismiss-all-toasts:hover {
+  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.5) !important;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Theater-inspired gradients */
+  .bg-theater-gradient {
+    background: linear-gradient(135deg, var(--notion-primary) 0%, var(--notion-secondary) 50%, #0f1419 100%);
+  }
+  
+  .dark .bg-theater-gradient {
+    background: linear-gradient(135deg, var(--notion-primary) 0%, var(--notion-secondary) 50%, #0a0d14 100%);
+  }
+  
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, var(--notion-gold) 0%, var(--notion-gold-light) 100%);
+  }
+  
+  /* Sophisticated shadows */
+  .shadow-theater {
+    box-shadow: 0 10px 25px -5px rgba(26, 26, 46, 0.1), 0 10px 10px -5px rgba(26, 26, 46, 0.04);
+  }
+  
+  .dark .shadow-theater {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .shadow-gold {
+    box-shadow: 0 20px 40px -10px rgba(247, 184, 1, 0.3), 0 10px 20px -5px rgba(247, 184, 1, 0.2);
+  }
+  
+  .dark .shadow-gold {
+    box-shadow: 0 20px 40px -10px rgba(251, 191, 36, 0.4), 0 10px 20px -5px rgba(251, 191, 36, 0.3);
+  }
+  
+  /* Enhanced typography */
+  .hero-headline {
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  
+  .hero-subheadline {
+    letter-spacing: -0.01em;
+    line-height: 1.6;
+  }
+  
+  /* Background textures */
+  .bg-stage-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(247, 184, 1, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(247, 184, 1, 0.05) 0%, transparent 50%);
+  }
+  
+  .dark .bg-stage-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(251, 191, 36, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
+  }
 }
