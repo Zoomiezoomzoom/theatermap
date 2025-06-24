@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
 // GET /api/submissions - Get all submissions for the authenticated user
 export async function GET() {
   try {
-    let userId;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-    } catch (authError) {
-      console.error('Auth error (GET):', authError);
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-    }
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,14 +18,7 @@ export async function GET() {
     });
 
     if (!user) {
-      let clerkUser;
-      try {
-        const authResult = await auth();
-        clerkUser = authResult.user;
-      } catch (authError) {
-        console.error('Auth error (GET, user creation):', authError);
-        return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-      }
+      const clerkUser = await currentUser();
       if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
         return NextResponse.json({ error: 'User email not found' }, { status: 400 });
       }
@@ -51,7 +38,8 @@ export async function GET() {
 
     return NextResponse.json(submissions);
   } catch (error) {
-    console.error('Error fetching submissions:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching submissions:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -59,14 +47,8 @@ export async function GET() {
 // POST /api/submissions - Create a new submission
 export async function POST(request: NextRequest) {
   try {
-    let userId;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-    } catch (authError) {
-      console.error('Auth error (POST):', authError);
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-    }
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -76,7 +58,8 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch (jsonError) {
-      console.error('JSON parse error (POST):', jsonError);
+      const errorMessage = jsonError instanceof Error ? jsonError.message : String(jsonError);
+      console.error('JSON parse error (POST):', errorMessage);
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
@@ -106,14 +89,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      let clerkUser;
-      try {
-        const authResult = await auth();
-        clerkUser = authResult.user;
-      } catch (authError) {
-        console.error('Auth error (POST, user creation):', authError);
-        return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
-      }
+      const clerkUser = await currentUser();
       if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
         return NextResponse.json({ error: 'User email not found' }, { status: 400 });
       }
@@ -144,7 +120,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {
-    console.error('Error creating submission:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error creating submission:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 

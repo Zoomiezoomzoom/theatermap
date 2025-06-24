@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { prisma } from '@/lib/prisma';
+import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/notifications';
+import prisma from '@/lib/prisma';
 
-// Get user notification preferences
+// GET /api/notifications/preferences - Get user's notification preferences
 export async function GET() {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,39 +15,27 @@ export async function GET() {
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      include: { notificationPreferences: true }
+      where: { clerkId: userId }
     });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Return default preferences if none exist
-    if (!user.notificationPreferences) {
-      const defaultPreferences = {
-        deadlineReminders: true,
-        deadlineReminderDays: [7, 3, 1],
-        overdueNotifications: true,
-        statusUpdates: true,
-        weeklyDigest: true,
-        emailEnabled: true
-      };
-
-      return NextResponse.json(defaultPreferences);
-    }
-
-    return NextResponse.json(user.notificationPreferences);
-  } catch (error) {
-    console.error('Error fetching notification preferences:', error);
+    const preferences = await getNotificationPreferences(user.id);
+    return NextResponse.json(preferences);
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching notification preferences:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// Update user notification preferences
+// PUT /api/notifications/preferences - Update user's notification preferences
 export async function PUT(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -70,32 +60,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Update or create notification preferences
-    const preferences = await prisma.notificationPreferences.upsert({
-      where: { userId: user.id },
-      update: {
-        deadlineReminders,
-        deadlineReminderDays,
-        overdueNotifications,
-        statusUpdates,
-        weeklyDigest,
-        emailEnabled,
-        updatedAt: new Date()
-      },
-      create: {
-        userId: user.id,
-        deadlineReminders,
-        deadlineReminderDays,
-        overdueNotifications,
-        statusUpdates,
-        weeklyDigest,
-        emailEnabled
-      }
+    const updatedPreferences = await updateNotificationPreferences(user.id, {
+      deadlineReminders,
+      deadlineReminderDays,
+      overdueNotifications,
+      statusUpdates,
+      weeklyDigest,
+      emailEnabled
     });
 
-    return NextResponse.json(preferences);
-  } catch (error) {
-    console.error('Error updating notification preferences:', error);
+    return NextResponse.json(updatedPreferences);
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error updating notification preferences:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 

@@ -4,7 +4,8 @@ import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,7 +24,8 @@ export async function GET() {
       connected: !!user.nylasGrantId 
     });
   } catch (error) {
-    console.error('Error checking Nylas status:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error checking Nylas status:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 

@@ -1,8 +1,8 @@
-import { prisma } from './prisma';
+import prisma from './prisma';
 import { 
   sendDeadlineReminder, 
   sendWeeklyDigest, 
-  sendStatusUpdate,
+  sendStatusUpdateEmail,
   type EmailSubmission,
   type EmailUser,
   type UserNotificationPreferences,
@@ -257,7 +257,7 @@ export const sendStatusUpdateNotification = async (
       lastName: submission.user.lastName || undefined
     };
     
-    await sendStatusUpdate(emailSubmission, emailUser, oldStatus, newStatus);
+    await sendStatusUpdateEmail(emailSubmission, emailUser, oldStatus, newStatus);
     
     // Log the notification
     await prisma.notification.create({
@@ -411,5 +411,165 @@ export const createFollowUpEvent = async (submissionId: string) => {
     console.log(`Created follow-up event for ${submission.theaterName}`);
   } catch (error) {
     console.error('Failed to create follow-up event:', error);
+  }
+};
+
+// Check for upcoming deadlines and send reminders
+export const checkDeadlinesAndSendReminders = async () => {
+  console.log('Checking for upcoming deadlines...');
+  
+  try {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Get all submissions with deadlines in the next 7 days
+    const upcomingDeadlines = await prisma.submission.findMany({
+      where: {
+        deadline: {
+          gte: now,
+          lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        },
+        status: {
+          in: ['Submitted', 'Under Review'] // Only active submissions
+        }
+      },
+      include: {
+        user: {
+          include: {
+            notificationPreferences: true
+          }
+        }
+      }
+    });
+
+    console.log(`Found ${upcomingDeadlines.length} submissions with upcoming deadlines`);
+
+    for (const submission of upcomingDeadlines) {
+      const daysUntilDeadline = Math.ceil(
+        (new Date(submission.deadline!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Check if user has deadline reminders enabled
+      const preferences = submission.user.notificationPreferences;
+      if (!preferences?.deadlineReminders) {
+        console.log(`Skipping ${submission.id} - deadline reminders disabled for user ${submission.userId}`);
+        continue;
+      }
+
+      // Check if we should send a reminder for this number of days
+      if (!preferences.deadlineReminderDays.includes(daysUntilDeadline)) {
+        console.log(`Skipping ${submission.id} - ${daysUntilDeadline} days not in reminder schedule`);
+        continue;
+      }
+
+      // Check if we've already sent a notification for this deadline
+      const existingNotification = await prisma.notification.findFirst({
+        where: {
+          userId: submission.userId,
+          submissionId: submission.id,
+          type: `deadline_${daysUntilDeadline}_days`,
+          sentAt: {
+            gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) // Within last 24 hours
+          }
+        }
+      });
+
+      if (existingNotification) {
+        console.log(`Skipping ${submission.id} - notification already sent for ${daysUntilDeadline} days`);
+        continue;
+      }
+
+      // Send the reminder
+      try {
+        console.log(`Sending ${daysUntilDeadline}-day reminder for submission ${submission.id}`);
+        await sendDeadlineReminder(submission, submission.user, daysUntilDeadline);
+        console.log(`Successfully sent reminder for submission ${submission.id}`);
+      } catch (error) {
+        console.error(`Failed to send reminder for submission ${submission.id}:`, error);
+      }
+    }
+
+    console.log('Deadline check completed');
+  } catch (error) {
+    console.error('Error checking deadlines:', error);
+  }
+};
+
+// Create or update notification preferences
+export const updateNotificationPreferences = async (
+  userId: string, 
+  preferences: {
+    deadlineReminders?: boolean;
+    deadlineReminderDays?: number[];
+    overdueNotifications?: boolean;
+    statusUpdates?: boolean;
+    weeklyDigest?: boolean;
+    emailEnabled?: boolean;
+  }
+) => {
+  try {
+    const updatedPreferences = await prisma.notificationPreferences.upsert({
+      where: { userId },
+      update: preferences,
+      create: {
+        userId,
+        ...preferences,
+        deadlineReminderDays: preferences.deadlineReminderDays || [7, 3, 1],
+        deadlineReminders: preferences.deadlineReminders ?? true,
+        overdueNotifications: preferences.overdueNotifications ?? true,
+        statusUpdates: preferences.statusUpdates ?? true,
+        weeklyDigest: preferences.weeklyDigest ?? true,
+        emailEnabled: preferences.emailEnabled ?? true,
+      }
+    });
+
+    return updatedPreferences;
+  } catch (error) {
+    console.error('Failed to update notification preferences:', error);
+    throw error;
+  }
+};
+
+// Get notification preferences for a user
+export const getNotificationPreferences = async (userId: string) => {
+  try {
+    const preferences = await prisma.notificationPreferences.findUnique({
+      where: { userId }
+    });
+
+    if (!preferences) {
+      // Create default preferences
+      return await updateNotificationPreferences(userId, {});
+    }
+
+    return preferences;
+  } catch (error) {
+    console.error('Failed to get notification preferences:', error);
+    throw error;
+  }
+};
+
+// Get notification history for a user
+export const getNotificationHistory = async (userId: string, limit = 50) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: { userId },
+      include: {
+        submission: {
+          select: {
+            theaterName: true,
+            scriptTitle: true
+          }
+        }
+      },
+      orderBy: { sentAt: 'desc' },
+      take: limit
+    });
+
+    return notifications;
+  } catch (error) {
+    console.error('Failed to get notification history:', error);
+    throw error;
   }
 }; 

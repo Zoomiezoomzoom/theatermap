@@ -6,7 +6,8 @@ import nylas from '@/lib/nylas';
 // POST /api/nylas/events - Create a Nylas calendar event
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -81,14 +82,16 @@ export async function POST(request: NextRequest) {
         });
         console.log(`Updated submission ${submissionId} with calendar event ID ${event.data.id}`);
       } catch (updateError) {
-        console.error('Failed to update submission with calendar event ID:', updateError);
+        const errorMessage = updateError instanceof Error ? updateError.message : String(updateError);
+        console.error('Failed to update submission with calendar event ID:', errorMessage);
         // Don't fail the entire request if the update fails
       }
     }
 
     return NextResponse.json(event.data, { status: 201 });
   } catch (error: any) {
-    console.error('Error creating Nylas event:', error?.message || error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error creating Nylas event:', errorMessage);
     
     // Provide more specific error messages if possible
     if (error?.response?.data) {

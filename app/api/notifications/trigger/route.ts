@@ -1,37 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { triggerDeadlineCheck, triggerWeeklyDigest } from '@/lib/cron';
+import { checkDeadlinesAndSendReminders } from '@/lib/notifications';
 
-// Manual trigger for notifications (for testing)
+// POST /api/notifications/trigger - Trigger deadline checks (called by cron job)
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    // Optional: Add authentication for the cron job
+    const authHeader = request.headers.get('authorization');
+    const expectedToken = process.env.CRON_SECRET_TOKEN;
     
-    if (!userId) {
+    if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { type } = body; // 'deadline' or 'weekly'
-
-    if (!type || !['deadline', 'weekly'].includes(type)) {
-      return NextResponse.json({ error: 'Invalid notification type' }, { status: 400 });
-    }
-
-    let result;
-    if (type === 'deadline') {
-      result = await triggerDeadlineCheck();
-    } else if (type === 'weekly') {
-      result = await triggerWeeklyDigest();
-    }
-
+    console.log('Triggering deadline check...');
+    
+    // Check for upcoming deadlines and send reminders
+    await checkDeadlinesAndSendReminders();
+    
     return NextResponse.json({ 
       success: true, 
-      type, 
-      message: `${type} notification check completed` 
+      message: 'Deadline check completed',
+      timestamp: new Date().toISOString()
     });
-  } catch (error) {
-    console.error('Error triggering notification:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error triggering deadline check:', errorMessage);
+    
+    return NextResponse.json({ 
+      error: 'Failed to trigger deadline check',
+      details: errorMessage
+    }, { status: 500 });
+  }
+}
+
+// GET /api/notifications/trigger - Manual trigger for testing
+export async function GET(request: NextRequest) {
+  try {
+    console.log('Manual deadline check triggered...');
+    
+    // Check for upcoming deadlines and send reminders
+    await checkDeadlinesAndSendReminders();
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Manual deadline check completed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error in manual deadline check:', errorMessage);
+    
+    return NextResponse.json({ 
+      error: 'Failed to complete deadline check',
+      details: errorMessage
+    }, { status: 500 });
   }
 } 

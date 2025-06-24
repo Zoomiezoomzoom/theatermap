@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ nylasGrantId: user.nylasGrantId });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching user:', errorMessage);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

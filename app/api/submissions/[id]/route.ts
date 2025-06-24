@@ -9,7 +9,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -35,8 +36,9 @@ export async function GET(
     }
 
     return NextResponse.json(submission);
-  } catch (error) {
-    console.error('Error fetching submission:', error);
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching submission:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -47,7 +49,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -136,8 +139,9 @@ export async function PUT(
     }
 
     return NextResponse.json(submission);
-  } catch (error) {
-    console.error('Error updating submission:', error);
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error updating submission:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -148,7 +152,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -184,8 +189,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: 'Submission deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting submission:', error);
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error deleting submission:', errorMessage);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 } 
